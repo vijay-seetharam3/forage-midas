@@ -1,1 +1,18 @@
-general.kafka-topic: transaction-topic
+general:
+  kafka-topic: transaction-topic
+  group-id: transaction-group
+# Kafka server properties
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092  # Kafka broker address
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.jpmc.midascore.TransactionSerializer  # Use the custom serializer
+    consumer:
+      group-id: ${general.group-id}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: com.jpmc.midascore.TransactionDeserializer # Use the custom deserializer
+
+    listener:
+      topic:  ${general.kafka-topic}

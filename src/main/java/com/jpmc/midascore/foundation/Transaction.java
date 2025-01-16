@@ -1,6 +1,7 @@
 package com.jpmc.midascore.foundation;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
@@ -8,14 +9,19 @@ public class Transaction {
     private long recipientId;
     private float amount;
 
-    public Transaction() {
-    }
 
-    public Transaction(long senderId, long recipientId, float amount) {
+
+    @JsonCreator
+    public Transaction(
+            @JsonProperty("senderId") long senderId,
+            @JsonProperty("recipientId") long recipientId,
+            @JsonProperty("amount") float amount
+    ) {
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.amount = amount;
     }
+
 
     public long getSenderId() {
         return senderId;
