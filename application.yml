@@ -1,13 +1,18 @@
 general:
   kafka-topic: transaction-topic
   group-id: transaction-group
+
+server:
+  port: 33400
+
+
 # Kafka server properties
 spring:
   kafka:
     bootstrap-servers: localhost:9092  # Kafka broker address
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: com.jpmc.midascore.TransactionSerializer  # Use the custom serializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer  # Use the custom serializer
     consumer:
       group-id: ${general.group-id}
       auto-offset-reset: earliest

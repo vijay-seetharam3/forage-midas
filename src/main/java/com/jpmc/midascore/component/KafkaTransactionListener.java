@@ -1,7 +1,8 @@
-package com.jpmc.midascore;
+package com.jpmc.midascore.component;
 
 import com.jpmc.midascore.entity.TransactionRecord;
 import com.jpmc.midascore.entity.UserRecord;
+import com.jpmc.midascore.foundation.Incentive;
 import com.jpmc.midascore.foundation.Transaction;
 import com.jpmc.midascore.repository.TransactionRecordRepository;
 import com.jpmc.midascore.repository.UserRepository;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 
 @Component
@@ -20,6 +22,11 @@ public class KafkaTransactionListener {
 
     @Autowired
     private TransactionRecordRepository transactionRecordRepository;
+
+
+    @Autowired
+    private IncentiveService incentiveService;
+
 
     @KafkaListener(topics = "${general.kafka-topic}", groupId = "${general.group-id}")
     public void listen(Transaction transaction) {
@@ -33,23 +40,25 @@ public class KafkaTransactionListener {
             // Validate transaction
             if (sender != null && recipient != null && sender.getBalance() >= transaction.getAmount()) {
                 // Deduct from sender
-                sender.setBalance(sender.getBalance() - transaction.getAmount());
+                Incentive incentive = incentiveService.fetchIncentive(transaction);
 
-                // Add to recipient
-                recipient.setBalance(recipient.getBalance() + transaction.getAmount());
+                sender.setBalance(sender.getBalance()- transaction.getAmount());
+                recipient.setBalance(recipient.getBalance() + transaction.getAmount() + incentive.getAmount());
 
                 // Save updated balances
                 userRepository.save(sender);
                 userRepository.save(recipient);
 
                 // Record transaction
-                TransactionRecord transactionRecord = new TransactionRecord(sender, recipient, transaction.getAmount(), LocalDateTime.now());
+                TransactionRecord transactionRecord = new TransactionRecord(sender, recipient, transaction.getAmount(),incentive.getAmount(), LocalDateTime.now());
                 transactionRecordRepository.save(transactionRecord);
 
                 System.out.println("Transaction Successful: " + sender.getName() + ": "
                         + sender.getBalance() + " "
                         + recipient.getName() + ": "
-                        + recipient.getBalance());
+                        + recipient.getBalance()+" "
+                        + transaction.getAmount() +
+                        " Incentive: " + incentive.getAmount());
                         System.out.println("Transaction processed successfully.");
             } else {
                 System.out.println("Invalid transaction. Discarding.");

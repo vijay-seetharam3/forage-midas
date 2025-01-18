@@ -7,7 +7,6 @@ import org.springframework.kafka.annotation.EnableKafka;
 @SpringBootApplication(scanBasePackages = "com.jpmc.midascore")
 @EnableKafka
 public class MidasCoreApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(MidasCoreApplication.class, args);
     }
